@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jiief 专用转盘</title>
+    <title>幸运转盘 - 多人协同版</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -370,6 +370,31 @@
             border-radius: 10px;
             font-weight: 700;
             font-size: 0.9em;
+        }
+
+        .online-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: white;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #A78BFA;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .mode-selector {
@@ -926,8 +951,10 @@
             <div id="adminLogin" style="display: none;">
                 <div class="admin-badge">👑 管理员专用</div>
                 <input type="password" class="login-input" id="adminPassword" placeholder="输入管理员密码">
+                <input type="text" class="login-input" id="customKey" placeholder="自定义房间秘钥（可选）" maxlength="20" style="text-transform: uppercase;">
                 <button class="login-btn" onclick="adminLogin()">创建房间</button>
                 <button class="login-btn secondary" onclick="backToSelection()">返回</button>
+                <div style="margin-top: 15px; color: #888; font-size: 0.9em;">💡 不输入则自动生成随机秘钥</div>
             </div>
 
             <div id="userJoin" style="display: none;">
@@ -976,12 +1003,17 @@
                 <div class="room-key">🔑 <span id="displayKey"></span></div>
                 <div class="user-badge" id="userBadge">👤 <span id="displayNickname"></span></div>
                 <div class="admin-indicator" id="adminIndicator" style="display: none;">👑 管理员</div>
+                <div class="online-status">
+                    <div class="status-dot"></div>
+                    <span>准备中</span>
+                </div>
             </div>
             <div class="mode-selector">
                 <button class="mode-btn active" onclick="switchMode('normal')">普通模式</button>
                 <button class="mode-btn" onclick="switchMode('advanced')">高级模式</button>
             </div>
             <div class="action-buttons">
+                <button class="logout-btn" id="refreshBtn" onclick="manualRefresh()">🔄 手动刷新</button>
                 <button class="clear-btn" onclick="clearHistory()">清理记录</button>
                 <button class="delete-btn" id="deleteRoomBtn" style="display: none;" onclick="deleteRoom()">删除房间</button>
                 <button class="logout-btn" onclick="logout()">退出房间</button>
@@ -1210,31 +1242,321 @@
             return key;
         }
 
-        function saveToLocalStorage() {
+        // 存储系统 - 支持真正的多设备协同
+        let lastSyncTime = 0;
+        let syncLock = false;
+        let currentSpinState = null;
+        let useCloudStorage = true; // 是否使用云端存储
+
+        async function saveToStorage() {
+            if (syncLock) return;
+            
             const data = {
                 participants,
                 wonParticipants,
                 history,
                 currentMode,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                lastUser: currentNickname,
+                spinState: currentSpinState
             };
-            localStorage.setItem(`room_${currentRoom}`, JSON.stringify(data));
-        }
 
-        function loadFromLocalStorage() {
-            const data = localStorage.getItem(`room_${currentRoom}`);
-            if (data) {
-                const parsed = JSON.parse(data);
-                participants = parsed.participants || [];
-                wonParticipants = parsed.wonParticipants || [];
-                history = parsed.history || [];
-                currentMode = parsed.currentMode || 'normal';
-                updateModeButtons(currentMode);
+            try {
+                syncLock = true;
+                
+                // 先保存到本地（快速、可靠）
+                localStorage.setItem(`room_${currentRoom}`, JSON.stringify(data));
+                
+                // 尝试保存到云端（如果启用）
+                if (useCloudStorage) {
+                    try {
+                        await window.storage.set(`room_${currentRoom}`, JSON.stringify(data), true);
+                        console.log('✅ 云端同步成功');
+                        updateSyncStatus('success');
+                    } catch (cloudError) {
+                        console.warn('⚠️ 云端同步失败，切换到本地模式', cloudError);
+                        useCloudStorage = false;
+                        updateSyncStatus('local');
+                    }
+                } else {
+                    updateSyncStatus('local');
+                }
+                
+                syncLock = false;
+            } catch (error) {
+                console.error('❌ 保存失败:', error);
+                syncLock = false;
+                updateSyncStatus('error');
             }
         }
 
-        function deleteFromLocalStorage() {
-            localStorage.removeItem(`room_${currentRoom}`);
+        async function loadFromStorage() {
+            if (syncLock) return false;
+            
+            try {
+                // 优先尝试云端（如果启用）
+                if (useCloudStorage) {
+                    try {
+                        const result = await window.storage.get(`room_${currentRoom}`, true);
+                        if (result && result.value) {
+                            const cloudData = JSON.parse(result.value);
+                            
+                            const localData = localStorage.getItem(`room_${currentRoom}`);
+                            const localTimestamp = localData ? JSON.parse(localData).timestamp : 0;
+                            
+                            if (cloudData.timestamp > localTimestamp) {
+                                applyData(cloudData);
+                                localStorage.setItem(`room_${currentRoom}`, JSON.stringify(cloudData));
+                                console.log('✅ 从云端加载最新数据');
+                                updateSyncStatus('success');
+                                return true;
+                            }
+                        }
+                    } catch (cloudError) {
+                        console.warn('⚠️ 云端加载失败，使用本地数据', cloudError);
+                        useCloudStorage = false;
+                    }
+                }
+
+                // 降级到本地
+                const localData = localStorage.getItem(`room_${currentRoom}`);
+                if (localData) {
+                    const parsed = JSON.parse(localData);
+                    applyData(parsed);
+                    console.log('📦 从本地加载数据');
+                    updateSyncStatus('local');
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ 加载失败:', error);
+                updateSyncStatus('error');
+            }
+
+            return false;
+        }
+
+        function applyData(data) {
+            participants = data.participants || [];
+            wonParticipants = data.wonParticipants || [];
+            history = data.history || [];
+            currentMode = data.currentMode || 'normal';
+            updateModeButtons(currentMode);
+            
+            // 应用旋转状态
+            if (data.spinState && data.spinState.isSpinning && data.lastUser !== currentNickname) {
+                applySyncedSpin(data.spinState);
+            }
+        }
+
+        // 应用同步的旋转
+        function applySyncedSpin(spinState) {
+            if (isSpinning) return; // 已经在转了，不重复
+            
+            const canvas = document.getElementById('wheelCanvas');
+            const spinBtn = document.getElementById('spinBtn');
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            spinBtn.textContent = `${spinState.user} 正在抽奖...`;
+            
+            // 计算剩余旋转时间
+            const elapsed = Date.now() - spinState.startTime;
+            const remaining = Math.max(0, 4000 - elapsed);
+            
+            if (remaining > 0) {
+                // 同步旋转
+                currentRotation = spinState.targetRotation;
+                canvas.style.transition = `transform ${remaining}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+                canvas.style.transform = `rotate(${currentRotation}deg)`;
+                
+                // 播放声音（可选）
+                if (soundEnabled) {
+                    playSpinSound();
+                }
+                
+                // 等待旋转完成
+                setTimeout(() => {
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = '开始抽奖！';
+                    canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+                }, remaining);
+            } else {
+                // 已经转完了，直接显示结果
+                currentRotation = spinState.targetRotation;
+                canvas.style.transform = `rotate(${currentRotation}deg)`;
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '开始抽奖！';
+            }
+        }
+
+        async function deleteFromStorage() {
+            try {
+                if (useCloudStorage) {
+                    try {
+                        await window.storage.delete(`room_${currentRoom}`, true);
+                        console.log('✅ 云端数据已删除');
+                    } catch (e) {
+                        console.warn('云端删除失败:', e);
+                    }
+                }
+                
+                localStorage.removeItem(`room_${currentRoom}`);
+                console.log('✅ 本地数据已删除');
+            } catch (error) {
+                console.error('删除失败:', error);
+            }
+        }
+
+        async function checkRoomExists(key) {
+            try {
+                if (useCloudStorage) {
+                    try {
+                        const result = await window.storage.get(`room_${key}`, true);
+                        if (result && result.value) {
+                            return true;
+                        }
+                    } catch (e) {
+                        console.warn('云端检查失败，检查本地', e);
+                        useCloudStorage = false;
+                    }
+                }
+                
+                const localData = localStorage.getItem(`room_${key}`);
+                return !!localData;
+            } catch (error) {
+                console.error('检查房间失败:', error);
+                return false;
+            }
+        }
+
+        // 手动刷新数据
+        async function manualRefresh() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) {
+                refreshBtn.textContent = '🔄 刷新中...';
+                refreshBtn.disabled = true;
+            }
+            
+            await loadFromStorage();
+            updateParticipantsList();
+            updateHistoryList();
+            drawWheel();
+            
+            if (refreshBtn) {
+                refreshBtn.textContent = '🔄 手动刷新';
+                refreshBtn.disabled = false;
+            }
+            
+            showNotification('数据已刷新！');
+        }
+
+        function updateSyncStatus(status) {
+            const statusDot = document.querySelector('.status-dot');
+            const statusText = document.querySelector('.online-status span');
+            
+            if (statusDot && statusText) {
+                switch(status) {
+                    case 'success':
+                        statusDot.style.background = '#4ECDC4';
+                        statusText.textContent = '实时协同';
+                        break;
+                    case 'local':
+                        statusDot.style.background = '#FFE66D';
+                        statusText.textContent = '本地模式';
+                        break;
+                    case 'error':
+                        statusDot.style.background = '#ff6b6b';
+                        statusText.textContent = '同步失败';
+                        break;
+                    case 'syncing':
+                        statusDot.style.background = '#A78BFA';
+                        statusText.textContent = '同步中...';
+                        break;
+                }
+            }
+        }
+
+        // 实时同步
+        let syncInterval = null;
+        let lastKnownTimestamp = 0;
+
+        function startSync() {
+            console.log('🔄 开始同步');
+            updateSyncStatus('syncing');
+            
+            syncInterval = setInterval(async () => {
+                if (!useCloudStorage) return; // 本地模式不自动同步
+                
+                try {
+                    const result = await window.storage.get(`room_${currentRoom}`, true);
+                    if (result && result.value) {
+                        const cloudData = JSON.parse(result.value);
+                        
+                        if (cloudData.timestamp > lastKnownTimestamp) {
+                            lastKnownTimestamp = cloudData.timestamp;
+                            
+                            if (cloudData.lastUser !== currentNickname) {
+                                console.log(`🔄 检测到 ${cloudData.lastUser} 的更新`);
+                                
+                                const oldHistoryLength = history.length;
+                                applyData(cloudData);
+                                updateParticipantsList();
+                                updateHistoryList();
+                                drawWheel();
+                                
+                                if (cloudData.history.length > oldHistoryLength) {
+                                    const latestWin = cloudData.history[cloudData.history.length - 1];
+                                    showNotification(`${latestWin.user} 抽中了 ${latestWin.winner}！`);
+                                    playFireworkSound();
+                                    createConfetti();
+                                }
+                            }
+                            
+                            updateSyncStatus('success');
+                        }
+                    }
+                } catch (error) {
+                    console.warn('同步失败，切换到本地模式', error);
+                    useCloudStorage = false;
+                    updateSyncStatus('local');
+                }
+            }, 2000); // 每2秒检查
+        }
+
+        function stopSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+                console.log('⏹️ 停止同步');
+            }
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(135deg, #4ECDC4, #3dbdb4);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 15px;
+                font-weight: 600;
+                font-size: 1.1em;
+                box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+                z-index: 10001;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = '🎉 ' + message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         function showAdminLogin() {
@@ -1278,9 +1600,56 @@
                 return;
             }
             
+            // 获取自定义秘钥
+            let key = document.getElementById('customKey').value.trim().toUpperCase();
+            
+            // 如果没有输入，生成随机秘钥
+            if (!key) {
+                key = generateSecretKey();
+            } else {
+                // 验证秘钥格式
+                if (!/^[A-Z0-9]+$/.test(key)) {
+                    alert('秘钥只能包含大写字母和数字！');
+                    return;
+                }
+                if (key.length < 4 || key.length > 20) {
+                    alert('秘钥长度应在4-20个字符之间！');
+                    return;
+                }
+            }
+            
+            // 检查房间是否已存在
+            const exists = checkRoomExists(key);
+            if (exists) {
+                // 房间已存在，询问是否加载
+                if (confirm(`房间 ${key} 已存在！\n\n点击"确定"加载现有数据\n点击"取消"重新输入秘钥`)) {
+                    // 加载现有房间
+                    isAdmin = true;
+                    currentNickname = '管理员';
+                    currentRoom = key;
+                    
+                    document.getElementById('displayKey').textContent = key;
+                    document.getElementById('displayNickname').textContent = currentNickname;
+                    document.getElementById('adminIndicator').style.display = 'block';
+                    document.getElementById('deleteRoomBtn').style.display = 'block';
+                    document.getElementById('settingsBtn').style.display = 'flex';
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    
+                    loadFromStorage();
+                    loadCustomSettings();
+                    updateParticipantsList();
+                    updateHistoryList();
+                    drawWheel();
+                    startSync();
+                    
+                    alert(`已加载房间 ${key} 的现有数据！`);
+                }
+                return;
+            }
+            
+            // 创建新房间
             isAdmin = true;
             currentNickname = '管理员';
-            const key = generateSecretKey();
             currentRoom = key;
             
             participants = [];
@@ -1288,7 +1657,7 @@
             history = [];
             currentMode = 'normal';
             
-            saveToLocalStorage();
+            saveToStorage();
             
             document.getElementById('displayKey').textContent = key;
             document.getElementById('displayNickname').textContent = currentNickname;
@@ -1297,11 +1666,12 @@
             document.getElementById('settingsBtn').style.display = 'flex';
             document.getElementById('loginScreen').classList.add('hidden');
             
-            alert(`房间创建成功！\n\n房间秘钥：${key}\n\n请将此秘钥分享给需要加入的成员。`);
+            alert(`房间创建成功！\n\n房间秘钥：${key}\n\n请将此秘钥分享给需要加入的成员。\n\n提示：此秘钥将永久保留，下次使用相同秘钥可继续使用！`);
             
             loadCustomSettings();
             updateParticipantsList();
             drawWheel();
+            startSync();
         }
 
         function joinRoom() {
@@ -1314,9 +1684,10 @@
                 return;
             }
             
-            const roomData = localStorage.getItem(`room_${key}`);
-            if (!roomData) {
-                alert('房间不存在，请检查秘钥');
+            // 检查房间是否存在
+            const exists = checkRoomExists(key);
+            if (!exists) {
+                alert('房间不存在，请检查秘钥是否正确');
                 return;
             }
             
@@ -1329,11 +1700,14 @@
             document.getElementById('displayNickname').textContent = currentNickname;
             document.getElementById('loginScreen').classList.add('hidden');
             
-            loadFromLocalStorage();
+            loadFromStorage();
             loadCustomSettings();
             updateParticipantsList();
             updateHistoryList();
             drawWheel();
+            startSync();
+            
+            console.log(`👤 ${currentNickname} 加入了房间 ${key}`);
         }
 
         function loadCustomSettings() {
@@ -1355,6 +1729,7 @@
 
         function logout() {
             if (confirm('确定要退出房间吗？')) {
+                stopSync();
                 currentRoom = '';
                 currentNickname = '';
                 isAdmin = false;
@@ -1378,7 +1753,7 @@
             }
             
             if (confirm('确定要删除这个房间吗？所有数据将被清空！')) {
-                deleteFromLocalStorage();
+                deleteFromStorage();
                 alert('房间已删除！');
                 logout();
             }
@@ -1391,7 +1766,7 @@
                 updateHistoryList();
                 updateParticipantsList();
                 drawWheel();
-                saveToLocalStorage();
+                saveToStorage();
                 alert('中奖记录已清理！');
             }
         }
@@ -1404,7 +1779,7 @@
                 updateParticipantsList();
                 updateHistoryList();
                 drawWheel();
-                saveToLocalStorage();
+                saveToStorage();
                 alert('所有数据已清空，可以重新开始！');
             }
         }
@@ -1412,7 +1787,7 @@
         function switchMode(mode) {
             currentMode = mode;
             updateModeButtons(mode);
-            saveToLocalStorage();
+            saveToStorage();
             drawWheel(); // 重新绘制以更新颜色
             playClickSound();
         }
@@ -1436,7 +1811,7 @@
                 input.value = '';
                 updateParticipantsList();
                 drawWheel();
-                saveToLocalStorage();
+                saveToStorage();
                 playClickSound();
             }
         }
@@ -1608,7 +1983,7 @@
             }
         }
 
-        function spin() {
+        async function spin() {
             if (isSpinning) return;
             
             const availableParticipants = currentMode === 'advanced' 
@@ -1671,7 +2046,18 @@
             
             console.log('🎯 中奖:', winnerIndex, winner, '昵称:', currentNickname);
             
-            setTimeout(() => {
+            // 保存旋转状态，让其他用户能看到转盘在转
+            currentSpinState = {
+                isSpinning: true,
+                user: currentNickname,
+                targetRotation: currentRotation,
+                winnerIndex: winnerIndex,
+                winner: winner,
+                startTime: Date.now()
+            };
+            await saveToStorage();
+            
+            setTimeout(async () => {
                 if (currentMode === 'advanced' && !wonParticipants.includes(winner)) {
                     wonParticipants.push(winner);
                 }
@@ -1683,7 +2069,10 @@
                     mode: currentMode
                 });
                 
-                saveToLocalStorage();
+                // 清除旋转状态
+                currentSpinState = null;
+                await saveToStorage();
+                
                 updateParticipantsList();
                 updateHistoryList();
                 drawWheel();
