@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸运转盘 - 优化演示版</title>
+    <title>幸运转盘</title>
     <style>
         * {
             margin: 0;
@@ -553,15 +553,15 @@
         <div class="main-content">
             <div class="participants-section">
                 <div class="input-group">
-                    <input type="text" class="name-input" id="nameInput" placeholder="输入参与者姓名..." onkeypress="if(event.key==='Enter') addName()">
+                    <input type="text" class="name-input" id="nameInput" placeholder="输入项目名称..." onkeypress="if(event.key==='Enter') addName()">
                     <button class="btn btn-add" onclick="addName()">添加</button>
                     <button class="btn btn-clear" onclick="clearAll()">清空</button>
                 </div>
                 
-                <h2 class="participants-title">参与者列表</h2>
+                <h2 class="participants-title">项目列表</h2>
                 <div class="participants-list" id="participantsList">
                     <p style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">
-                        还没有参与者<br>请添加至少2个参与者
+                        还没有项目<br>请添加至少2个项目
                     </p>
                 </div>
             </div>
