@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运转盘 - 优化演示版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .settings-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            display: none;
+            z-index: 999;
+        }
+
+        .settings-panel.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .bg-type-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .bg-type-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: #e0e0e0;
+            color: #555;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bg-type-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .color-input {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .gradient-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .gradient-preset {
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .gradient-preset:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .title {
+            text-align: center;
+            color: white;
+            font-size: 3em;
+            margin-bottom: 40px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .participants-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .name-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .name-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .name-input:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: rgba(255, 59, 48, 0.8);
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: rgba(255, 59, 48, 1);
+            transform: translateY(-2px);
+        }
+
+        .participants-title {
+            color: white;
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .participants-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .participant-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .participant-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .participant-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+        }
+
+        .wheel-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 8px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 15px 60px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        .wheel-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            padding: 4px;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .pointer-triangle {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 45px solid #FFD700;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            position: relative;
+        }
+
+        .pointer-triangle::after {
+            content: '';
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: #ff3b30;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .btn-spin {
+            padding: 20px 60px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-spin:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-spin:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .btn-spin:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-spin::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-spin:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.3s ease;
+            max-width: 90%;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-winner {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .modal-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .title {
+                font-size: 2em;
+            }
+
+            .settings-panel {
+                width: calc(100% - 40px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-btn" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
+        </svg>
+    </button>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-title">背景设置</div>
+        
+        <div class="setting-group">
+            <label class="setting-label">背景类型</label>
+            <div class="bg-type-btns">
+                <button class="bg-type-btn" onclick="changeBgType('solid')">纯色</button>
+                <button class="bg-type-btn active" onclick="changeBgType('gradient')">渐变</button>
+                <button class="bg-type-btn" onclick="changeBgType('image')">图片</button>
+            </div>
+        </div>
+
+        <div id="solidSettings" style="display: none;">
+            <div class="setting-group">
+                <label class="setting-label">选择颜色</label>
+                <input type="color" class="color-input" value="#667eea" onchange="changeSolidColor(this.value)">
+            </div>
+        </div>
+
+        <div id="gradientSettings">
+            <div class="setting-group">
+                <label class="setting-label">预设渐变</label>
+                <div class="gradient-presets">
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="applyGradient('#667eea', '#764ba2')"></button>
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #f12711, #f5af19)" onclick="applyGradient('#f12711', '#f5af19')"></button>
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #134e5e, #71b280)" onclick="applyGradient('#134e5e', '#71b280')"></button>
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #2e3192, #1bffff)" onclick="applyGradient('#2e3192', '#1bffff')"></button>
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #ff6e7f, #bfe9ff)" onclick="applyGradient('#ff6e7f', '#bfe9ff')"></button>
+                    <button class="gradient-preset" style="background: linear-gradient(135deg, #da22ff, #9733ee)" onclick="applyGradient('#da22ff', '#9733ee')"></button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">起始颜色</label>
+                <input type="color" class="color-input" id="gradientStart" value="#667eea" onchange="updateGradient()">
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">结束颜色</label>
+                <input type="color" class="color-input" id="gradientEnd" value="#764ba2" onchange="updateGradient()">
+            </div>
+        </div>
+
+        <div id="imageSettings" style="display: none;">
+            <div class="setting-group">
+                <label class="setting-label">图片URL</label>
+                <input type="text" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" placeholder="输入图片地址" onchange="changeImageBg(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="title">🎰 幸运转盘</h1>
+        
+        <div class="main-content">
+            <div class="participants-section">
+                <div class="input-group">
+                    <input type="text" class="name-input" id="nameInput" placeholder="输入参与者姓名..." onkeypress="if(event.key==='Enter') addName()">
+                    <button class="btn btn-add" onclick="addName()">添加</button>
+                    <button class="btn btn-clear" onclick="clearAll()">清空</button>
+                </div>
+                
+                <h2 class="participants-title">参与者列表</h2>
+                <div class="participants-list" id="participantsList">
+                    <p style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">
+                        还没有参与者<br>请添加至少2个参与者
+                    </p>
+                </div>
+            </div>
+
+            <div class="wheel-section">
+                <div class="wheel-container">
+                    <div class="wheel-outer">
+                        <div class="wheel-inner">
+                            <canvas id="wheelCanvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="wheel-pointer">
+                        <div class="pointer-triangle"></div>
+                    </div>
+                </div>
+                
+                <button class="btn-spin" id="spinBtn" onclick="spin()">开始抽奖！</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🎉 恭喜获奖！</h2>
+            <div class="modal-winner" id="winnerName">获奖者</div>
+            <button class="modal-btn" onclick="closeModal()">确定</button>
+        </div>
+    </div>
+
+    <script>
+        let participants = [];
+        let isSpinning = false;
+        let currentRotation = 0;
+
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+            '#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe',
+            '#FA8BFF', '#2BD2FF', '#2BFF88', '#FFDE59', '#FF5E98'
+        ];
+
+        function addName() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            
+            if (name) {
+                participants.push(name);
+                input.value = '';
+                updateParticipantsList();
+                drawWheel();
+            }
+        }
+
+        function clearAll() {
+            participants = [];
+            updateParticipantsList();
+            drawWheel();
+        }
+
+        function updateParticipantsList() {
+            const list = document.getElementById('participantsList');
+            
+            if (participants.length === 0) {
+                list.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">还没有参与者<br>请添加至少2个参与者</p>';
+            } else {
+                list.innerHTML = participants.map((name, index) => `
+                    <div class="participant-item">
+                        <div class="participant-number">${index + 1}</div>
+                        <span>${name}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+            
+            if (participants.length === 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#333';
+                ctx.fill();
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                return;
+            }
+            
+            const sliceAngle = (2 * Math.PI) / participants.length;
+            
+            participants.forEach((name, index) => {
+                const startAngle = index * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 18px Arial';
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 4;
+                ctx.fillText(name, radius * 0.65, 0);
+                ctx.restore();
+            });
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function spin() {
+            if (isSpinning || participants.length < 2) return;
+            
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            spinBtn.disabled = true;
+            spinBtn.textContent = '旋转中...';
+            
+            const canvas = document.getElementById('wheelCanvas');
+            const spins = 5 + Math.floor(Math.random() * 3);
+            const extraDegrees = Math.random() * 360;
+            const totalRotation = spins * 360 + extraDegrees;
+            
+            currentRotation += totalRotation;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            
+            setTimeout(() => {
+                const normalizedRotation = currentRotation % 360;
+                const sliceAngle = 360 / participants.length;
+                const winnerIndex = Math.floor((360 - normalizedRotation + sliceAngle / 2) / sliceAngle) % participants.length;
+                
+                showWinner(participants[winnerIndex]);
+                
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '开始抽奖！';
+            }, 4000);
+        }
+
+        function showWinner(name) {
+            document.getElementById('winnerName').textContent = name;
+            document.getElementById('resultModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('active');
+        }
+
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('active');
+        }
+
+        function changeBgType(type) {
+            document.querySelectorAll('.bg-type-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('solidSettings').style.display = type === 'solid' ? 'block' : 'none';
+            document.getElementById('gradientSettings').style.display = type === 'gradient' ? 'block' : 'none';
+            document.getElementById('imageSettings').style.display = type === 'image' ? 'block' : 'none';
+        }
+
+        function changeSolidColor(color) {
+            document.body.style.background = color;
+        }
+
+        function applyGradient(start, end) {
+            document.getElementById('gradientStart').value = start;
+            document.getElementById('gradientEnd').value = end;
+            updateGradient();
+        }
+
+        function updateGradient() {
+            const start = document.getElementById('gradientStart').value;
+            const end = document.getElementById('gradientEnd').value;
+            document.body.style.background = `linear-gradient(135deg, ${start}, ${end})`;
+        }
+
+        function changeImageBg(url) {
+            if (url) {
+                document.body.style.background = `url(${url})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
+            }
+        }
+
+        window.onload = () => {
+            drawWheel();
+            window.addEventListener('resize', drawWheel);
+        };
+    </script>
+</body>
+</html>
