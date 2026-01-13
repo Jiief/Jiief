@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jiief专用幸运转盘</title>
+    <title>Jiief 专用转盘</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,23 +12,189 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #FF6B9D;
+            --secondary: #C06C84;
+            --accent: #F67280;
+            --dark: #2D3561;
+            --light: #FFF5E4;
+            --success: #4ECDC4;
+            --warning: #FFE66D;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Archivo', sans-serif;
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            transition: background 0.5s ease;
+            position: relative;
+            overflow-x: hidden;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 107, 157, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* 登录界面 */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 18px 25px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1.1em;
+            font-family: 'Archivo', sans-serif;
+            font-weight: 600;
+            color: var(--dark);
+            outline: none;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .login-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-size: 1.2em;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        .login-btn.secondary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: var(--dark);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .nickname-display {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--success), #3dbdb4);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: 700;
+            margin-top: 15px;
+        }
+
+        /* 设置按钮 */
         .settings-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
@@ -38,6 +205,7 @@
             justify-content: center;
             transition: all 0.3s ease;
             z-index: 1000;
+            font-size: 1.8em;
         }
 
         .settings-btn:hover {
@@ -45,17 +213,12 @@
             transform: rotate(90deg);
         }
 
-        .settings-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
-
+        /* 设置面板 */
         .settings-panel {
             position: fixed;
-            top: 80px;
+            top: 90px;
             right: 20px;
-            width: 320px;
+            width: 350px;
             max-height: 80vh;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -65,11 +228,11 @@
             overflow-y: auto;
             display: none;
             z-index: 999;
+            animation: slideIn 0.3s ease;
         }
 
         .settings-panel.active {
             display: block;
-            animation: slideIn 0.3s ease;
         }
 
         @keyframes slideIn {
@@ -84,86 +247,200 @@
         }
 
         .settings-title {
-            font-size: 20px;
+            font-size: 1.5em;
             font-weight: bold;
-            color: #333;
+            color: var(--dark);
             margin-bottom: 20px;
+            font-family: 'Fredoka', sans-serif;
         }
 
         .setting-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .setting-label {
             display: block;
-            font-size: 14px;
+            font-size: 0.95em;
             font-weight: 600;
             color: #555;
             margin-bottom: 10px;
         }
 
-        .bg-type-btns {
-            display: flex;
-            gap: 8px;
-        }
-
-        .bg-type-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: #e0e0e0;
-            color: #555;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .bg-type-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .color-input {
-            width: 100%;
-            height: 50px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .gradient-presets {
+        .sound-options {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
 
-        .gradient-preset {
-            height: 50px;
+        .sound-option {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .sound-option:hover {
+            border-color: var(--primary);
+        }
+
+        .sound-option.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(246, 114, 128, 0.1));
+            color: var(--primary);
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .upload-btn input {
+            display: none;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .room-key {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .user-badge {
+            background: linear-gradient(135deg, var(--success), #3dbdb4);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .admin-indicator {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: var(--dark);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px;
+            border-radius: 15px;
+        }
+
+        .mode-btn {
+            padding: 12px 25px;
             border: none;
             border-radius: 10px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            font-size: 1em;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
         }
 
-        .gradient-preset:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        .mode-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin-top: 40px;
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .logout-btn, .delete-btn, .clear-btn {
+            padding: 12px 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        .delete-btn, .clear-btn {
+            border-color: rgba(255, 59, 48, 0.5);
+            color: #ff6b6b;
+        }
+
+        .delete-btn:hover, .clear-btn:hover {
+            background: rgba(255, 59, 48, 0.2);
+            border-color: #ff6b6b;
         }
 
         .title {
             text-align: center;
             color: white;
-            font-size: 3em;
+            font-size: 3.5em;
             margin-bottom: 40px;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            letter-spacing: -1px;
         }
 
         .main-content {
@@ -173,113 +450,159 @@
             align-items: start;
         }
 
+        /* 参与者面板 */
         .participants-section {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 25px;
+            padding: 35px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .input-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .name-input {
             flex: 1;
-            padding: 15px;
+            padding: 16px 20px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             background: rgba(255, 255, 255, 0.1);
             color: white;
-            font-size: 16px;
+            font-size: 1em;
+            font-weight: 600;
             outline: none;
             transition: all 0.3s ease;
+            font-family: 'Archivo', sans-serif;
         }
 
         .name-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .name-input:focus {
-            border-color: rgba(255, 255, 255, 0.6);
+            border-color: white;
             background: rgba(255, 255, 255, 0.15);
         }
 
         .btn {
-            padding: 15px 25px;
+            padding: 16px 22px;
             border: none;
             border-radius: 15px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 1em;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: 'Fredoka', sans-serif;
         }
 
         .btn-add {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--success), #3dbdb4);
             color: white;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
         }
 
         .btn-add:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
         }
 
         .btn-clear {
-            background: rgba(255, 59, 48, 0.8);
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
             color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
 
         .btn-clear:hover {
-            background: rgba(255, 59, 48, 1);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
 
         .participants-title {
             color: white;
-            font-size: 2em;
+            font-size: 1.8em;
             text-align: center;
             margin-bottom: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
         }
 
         .participants-list {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        .participants-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .participants-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .participants-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
         }
 
         .participant-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            color: white;
-            font-size: 18px;
             display: flex;
             align-items: center;
             gap: 15px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 600;
             transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        .participant-item.won {
+            background: rgba(50, 50, 50, 0.5);
+            opacity: 0.7;
         }
 
         .participant-item:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             transform: translateX(5px);
         }
 
         .participant-number {
             width: 35px;
             height: 35px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 16px;
+            font-weight: 700;
+            font-size: 1.1em;
+            flex-shrink: 0;
         }
 
+        .participant-item.won .participant-number {
+            background: linear-gradient(135deg, #555, #333);
+        }
+
+        .won-badge {
+            margin-left: auto;
+            padding: 5px 12px;
+            background: var(--warning);
+            color: var(--dark);
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+
+        /* 转盘区域 */
         .wheel-section {
             display: flex;
             flex-direction: column;
@@ -289,42 +612,33 @@
 
         .wheel-container {
             position: relative;
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1;
+            width: 500px;
+            height: 500px;
         }
 
         .wheel-outer {
             position: absolute;
-            inset: 0;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            padding: 8px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
-            }
-            50% {
-                box-shadow: 0 15px 60px rgba(255, 215, 0, 0.6);
-            }
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(20px);
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .wheel-inner {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-            padding: 4px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.2);
         }
 
         #wheelCanvas {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
         }
 
@@ -339,215 +653,341 @@
         .pointer-triangle {
             width: 0;
             height: 0;
-            border-left: 25px solid transparent;
-            border-right: 25px solid transparent;
-            border-top: 45px solid #FFD700;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-            position: relative;
-        }
-
-        .pointer-triangle::after {
-            content: '';
-            position: absolute;
-            top: -45px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 16px;
-            height: 16px;
-            background: #ff3b30;
-            border-radius: 50%;
-            border: 2px solid white;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--warning);
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
         }
 
         .btn-spin {
-            padding: 20px 60px;
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            padding: 25px 80px;
             border: none;
             border-radius: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
         }
 
         .btn-spin:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-        }
-
-        .btn-spin:active:not(:disabled) {
-            transform: scale(0.95);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
         }
 
         .btn-spin:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
-        .btn-spin::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-spin:hover:not(:disabled)::before {
-            left: 100%;
-        }
-
+        /* 结果弹窗 */
         .modal {
             display: none;
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            z-index: 2000;
+            z-index: 10000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
             display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal-content {
             background: white;
-            padding: 50px;
             border-radius: 30px;
+            padding: 60px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: scaleIn 0.3s ease;
-            max-width: 90%;
+            max-width: 500px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            animation: modalPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes scaleIn {
+        @keyframes modalPop {
             from {
-                transform: scale(0.7);
                 opacity: 0;
+                transform: scale(0.8);
             }
             to {
-                transform: scale(1);
                 opacity: 1;
+                transform: scale(1);
             }
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--success));
         }
 
         .modal-title {
-            font-size: 36px;
-            color: #333;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--dark);
             margin-bottom: 20px;
         }
 
+        .modal-user {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
         .modal-winner {
-            font-size: 48px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
+            font-size: 3em;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            color: var(--primary);
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(246, 114, 128, 0.1));
+            border-radius: 20px;
         }
 
         .modal-btn {
-            padding: 15px 40px;
-            font-size: 18px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            padding: 18px 50px;
             border: none;
             border-radius: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.3);
         }
 
         .modal-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+        }
+
+        /* 烟花效果 */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            position: absolute;
+            animation: confetti-fall 3s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 历史记录 */
+        .history-section {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .history-title {
+            color: white;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            color: white;
+            animation: slideIn 0.3s ease;
+        }
+
+        .history-winner {
+            font-weight: 700;
+            color: var(--warning);
+        }
+
+        .history-user {
+            color: var(--success);
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .history-time {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        /* 音效控制按钮 */
+        .sound-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 1.8em;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .wheel-container {
+                width: 400px;
+                height: 400px;
+            }
+
+            .title {
+                font-size: 2.5em;
+            }
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+
+            .btn-spin {
+                padding: 20px 50px;
+                font-size: 1.4em;
             }
 
             .title {
                 font-size: 2em;
             }
-
-            .settings-panel {
-                width: calc(100% - 40px);
-            }
         }
     </style>
 </head>
 <body>
-    <button class="settings-btn" onclick="toggleSettings()">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
-        </svg>
-    </button>
+    <!-- 登录界面 -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <div class="login-title">🎰 幸运转盘</div>
+            <div class="login-subtitle" id="loginSubtitle">选择进入方式</div>
+            
+            <div id="roleSelection">
+                <button class="login-btn" onclick="showAdminLogin()">我是管理员</button>
+                <button class="login-btn secondary" onclick="showUserJoin()">我要加入房间</button>
+            </div>
 
-    <div class="settings-panel" id="settingsPanel">
-        <div class="settings-title">背景设置</div>
-        
-        <div class="setting-group">
-            <label class="setting-label">背景类型</label>
-            <div class="bg-type-btns">
-                <button class="bg-type-btn" onclick="changeBgType('solid')">纯色</button>
-                <button class="bg-type-btn active" onclick="changeBgType('gradient')">渐变</button>
-                <button class="bg-type-btn" onclick="changeBgType('image')">图片</button>
+            <div id="adminLogin" style="display: none;">
+                <div class="admin-badge">👑 管理员专用</div>
+                <input type="password" class="login-input" id="adminPassword" placeholder="输入管理员密码">
+                <button class="login-btn" onclick="adminLogin()">创建房间</button>
+                <button class="login-btn secondary" onclick="backToSelection()">返回</button>
             </div>
-        </div>
 
-        <div id="solidSettings" style="display: none;">
-            <div class="setting-group">
-                <label class="setting-label">选择颜色</label>
-                <input type="color" class="color-input" value="#667eea" onchange="changeSolidColor(this.value)">
-            </div>
-        </div>
-
-        <div id="gradientSettings">
-            <div class="setting-group">
-                <label class="setting-label">预设渐变</label>
-                <div class="gradient-presets">
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="applyGradient('#667eea', '#764ba2')"></button>
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #f12711, #f5af19)" onclick="applyGradient('#f12711', '#f5af19')"></button>
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #134e5e, #71b280)" onclick="applyGradient('#134e5e', '#71b280')"></button>
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #2e3192, #1bffff)" onclick="applyGradient('#2e3192', '#1bffff')"></button>
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #ff6e7f, #bfe9ff)" onclick="applyGradient('#ff6e7f', '#bfe9ff')"></button>
-                    <button class="gradient-preset" style="background: linear-gradient(135deg, #da22ff, #9733ee)" onclick="applyGradient('#da22ff', '#9733ee')"></button>
-                </div>
-            </div>
-            <div class="setting-group">
-                <label class="setting-label">起始颜色</label>
-                <input type="color" class="color-input" id="gradientStart" value="#667eea" onchange="updateGradient()">
-            </div>
-            <div class="setting-group">
-                <label class="setting-label">结束颜色</label>
-                <input type="color" class="color-input" id="gradientEnd" value="#764ba2" onchange="updateGradient()">
-            </div>
-        </div>
-
-        <div id="imageSettings" style="display: none;">
-            <div class="setting-group">
-                <label class="setting-label">图片URL</label>
-                <input type="text" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" placeholder="输入图片地址" onchange="changeImageBg(this.value)">
+            <div id="userJoin" style="display: none;">
+                <input type="text" class="login-input" id="nicknameInput" placeholder="输入你的昵称（可选）">
+                <input type="text" class="login-input" id="secretKeyInput" placeholder="输入房间秘钥" maxlength="20">
+                <button class="login-btn" onclick="joinRoom()">加入房间</button>
+                <button class="login-btn secondary" onclick="backToSelection()">返回</button>
+                <div class="nickname-display" id="previewNickname" style="display: none;"></div>
             </div>
         </div>
     </div>
 
+    <!-- 设置按钮 -->
+    <div class="settings-btn" id="settingsBtn" onclick="toggleSettings()" style="display: none;">⚙️</div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-title">⚙️ 设置</div>
+        
+        <div class="setting-group">
+            <label class="setting-label">🎵 音效主题</label>
+            <div class="sound-options">
+                <div class="sound-option active" data-sound="classic" onclick="changeSoundTheme('classic')">经典</div>
+                <div class="sound-option" data-sound="cheerful" onclick="changeSoundTheme('cheerful')">欢快</div>
+                <div class="sound-option" data-sound="electronic" onclick="changeSoundTheme('electronic')">电子</div>
+                <div class="sound-option" data-sound="gentle" onclick="changeSoundTheme('gentle')">轻柔</div>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label class="setting-label">🖼️ 背景图片</label>
+            <label class="upload-btn">
+                📤 上传背景图片
+                <input type="file" accept="image/*" onchange="uploadBackground(event)">
+            </label>
+            <img id="bgPreview" class="preview-image" style="display: none;">
+            <button class="login-btn secondary" onclick="resetBackground()" style="margin-top: 10px;">恢复默认背景</button>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
     <div class="container">
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <div class="room-info">
+                <div class="room-key">🔑 <span id="displayKey"></span></div>
+                <div class="user-badge" id="userBadge">👤 <span id="displayNickname"></span></div>
+                <div class="admin-indicator" id="adminIndicator" style="display: none;">👑 管理员</div>
+            </div>
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="switchMode('normal')">普通模式</button>
+                <button class="mode-btn" onclick="switchMode('advanced')">高级模式</button>
+            </div>
+            <div class="action-buttons">
+                <button class="clear-btn" onclick="clearHistory()">清理记录</button>
+                <button class="delete-btn" id="deleteRoomBtn" style="display: none;" onclick="deleteRoom()">删除房间</button>
+                <button class="logout-btn" onclick="logout()">退出房间</button>
+            </div>
+        </div>
+
         <h1 class="title">🎰 幸运转盘</h1>
         
         <div class="main-content">
@@ -555,7 +995,7 @@
                 <div class="input-group">
                     <input type="text" class="name-input" id="nameInput" placeholder="输入项目名称..." onkeypress="if(event.key==='Enter') addName()">
                     <button class="btn btn-add" onclick="addName()">添加</button>
-                    <button class="btn btn-clear" onclick="clearAll()">清空</button>
+                    <button class="btn btn-clear" onclick="clearAllProjects()">清空</button>
                 </div>
                 
                 <h2 class="participants-title">项目列表</h2>
@@ -581,26 +1021,411 @@
                 <button class="btn-spin" id="spinBtn" onclick="spin()">开始抽奖！</button>
             </div>
         </div>
+
+        <!-- 历史记录 -->
+        <div class="history-section">
+            <div class="history-title">
+                <span>📜 抽奖历史</span>
+            </div>
+            <div id="historyList">
+                <p style="color: rgba(255,255,255,0.6); text-align: center;">暂无历史记录</p>
+            </div>
+        </div>
     </div>
 
+    <!-- 结果弹窗 -->
     <div class="modal" id="resultModal">
         <div class="modal-content">
-            <h2 class="modal-title">🎉 恭喜获奖！</h2>
-            <div class="modal-winner" id="winnerName">获奖者</div>
+            <h2 class="modal-title">🎉 恭喜中奖！</h2>
+            <div class="modal-user" id="modalUserName"></div>
+            <div class="modal-winner" id="winnerName">获奖项目</div>
             <button class="modal-btn" onclick="closeModal()">确定</button>
         </div>
     </div>
 
+    <!-- 音效控制 -->
+    <div class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</div>
+
     <script>
+        // 管理员密码
+        const ADMIN_PASSWORD = 'admin123';
+        
+        // 全局状态
+        let currentRoom = '';
+        let currentNickname = '';
+        let isAdmin = false;
         let participants = [];
+        let wonParticipants = [];
+        let history = [];
         let isSpinning = false;
         let currentRotation = 0;
+        let currentMode = 'normal';
+        let soundEnabled = true;
+        let currentSoundTheme = 'classic';
 
+        // 高级配色方案
         const colors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-            '#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe',
-            '#FA8BFF', '#2BD2FF', '#2BFF88', '#FFDE59', '#FF5E98'
+            '#FF6B9D', '#4ECDC4', '#FFD93D', '#6BCF7F', '#A78BFA', 
+            '#F87171', '#60A5FA', '#FB923C', '#34D399', '#C084FC',
+            '#F472B6', '#38BDF8', '#FBBF24', '#4ADE80', '#818CF8',
+            '#FB7185', '#22D3EE', '#FCD34D', '#10B981', '#A855F7',
+            '#EC4899', '#06B6D4', '#F59E0B', '#059669', '#8B5CF6'
         ];
+
+        // 随机昵称库
+        const nicknameAdjectives = ['快乐的', '幸运的', '勇敢的', '聪明的', '可爱的', '神秘的', '闪亮的', '欢乐的', '酷炫的', '梦幻的'];
+        const nicknameNouns = ['小熊', '兔子', '狐狸', '猫咪', '熊猫', '企鹅', '海豚', '独角兽', '龙', '凤凰'];
+
+        function generateRandomNickname() {
+            const adj = nicknameAdjectives[Math.floor(Math.random() * nicknameAdjectives.length)];
+            const noun = nicknameNouns[Math.floor(Math.random() * nicknameNouns.length)];
+            return adj + noun;
+        }
+
+        // 音效主题配置
+        const soundThemes = {
+            classic: {
+                spin: { freqs: [200, 50], duration: 0.1, type: 'square' },
+                firework: { base: 100, explode: 800, sparkle: 1200 }
+            },
+            cheerful: {
+                spin: { freqs: [400, 80], duration: 0.08, type: 'sine' },
+                firework: { base: 200, explode: 1200, sparkle: 1800 }
+            },
+            electronic: {
+                spin: { freqs: [300, 100], duration: 0.06, type: 'sawtooth' },
+                firework: { base: 150, explode: 1000, sparkle: 1500 }
+            },
+            gentle: {
+                spin: { freqs: [250, 40], duration: 0.12, type: 'sine' },
+                firework: { base: 120, explode: 600, sparkle: 900 }
+            }
+        };
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(frequency, duration, type = 'sine') {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playSpinSound() {
+            if (!soundEnabled) return;
+            const theme = soundThemes[currentSoundTheme].spin;
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => playTone(theme.freqs[0] + i * theme.freqs[1], theme.duration, theme.type), i * 100);
+            }
+        }
+
+        function playFireworkSound() {
+            if (!soundEnabled) return;
+            const theme = soundThemes[currentSoundTheme].firework;
+            
+            playTone(theme.base, 0.5, 'sawtooth');
+            setTimeout(() => {
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => playTone(theme.explode + Math.random() * 400, 0.3, 'square'), i * 100);
+                }
+            }, 500);
+            setTimeout(() => {
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => playTone(theme.sparkle + Math.random() * 800, 0.1, 'sine'), i * 50);
+                }
+            }, 800);
+        }
+
+        function playClickSound() {
+            if (!soundEnabled) return;
+            playTone(600, 0.1, 'sine');
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').textContent = soundEnabled ? '🔊' : '🔇';
+            playClickSound();
+        }
+
+        function changeSoundTheme(theme) {
+            currentSoundTheme = theme;
+            document.querySelectorAll('.sound-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.dataset.sound === theme) {
+                    opt.classList.add('active');
+                }
+            });
+            localStorage.setItem('soundTheme', theme);
+            playClickSound();
+        }
+
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('active');
+        }
+
+        function uploadBackground(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgData = e.target.result;
+                    document.body.style.background = `url(${imgData})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    
+                    document.getElementById('bgPreview').src = imgData;
+                    document.getElementById('bgPreview').style.display = 'block';
+                    
+                    localStorage.setItem('customBackground', imgData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetBackground() {
+            document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            document.getElementById('bgPreview').style.display = 'none';
+            localStorage.removeItem('customBackground');
+        }
+
+        function generateSecretKey() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let key = '';
+            for (let i = 0; i < 8; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return key;
+        }
+
+        function saveToLocalStorage() {
+            const data = {
+                participants,
+                wonParticipants,
+                history,
+                currentMode,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(`room_${currentRoom}`, JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem(`room_${currentRoom}`);
+            if (data) {
+                const parsed = JSON.parse(data);
+                participants = parsed.participants || [];
+                wonParticipants = parsed.wonParticipants || [];
+                history = parsed.history || [];
+                currentMode = parsed.currentMode || 'normal';
+                updateModeButtons(currentMode);
+            }
+        }
+
+        function deleteFromLocalStorage() {
+            localStorage.removeItem(`room_${currentRoom}`);
+        }
+
+        function showAdminLogin() {
+            document.getElementById('roleSelection').style.display = 'none';
+            document.getElementById('adminLogin').style.display = 'block';
+            document.getElementById('loginSubtitle').textContent = '管理员登录';
+        }
+
+        function showUserJoin() {
+            document.getElementById('roleSelection').style.display = 'none';
+            document.getElementById('userJoin').style.display = 'block';
+            document.getElementById('loginSubtitle').textContent = '加入房间';
+            
+            // 监听昵称输入，实时预览
+            const nicknameInput = document.getElementById('nicknameInput');
+            nicknameInput.addEventListener('input', function() {
+                const preview = document.getElementById('previewNickname');
+                if (this.value.trim()) {
+                    preview.textContent = '👤 ' + this.value.trim();
+                    preview.style.display = 'inline-block';
+                } else {
+                    const randomNick = generateRandomNickname();
+                    preview.textContent = '🎲 随机昵称: ' + randomNick;
+                    preview.style.display = 'inline-block';
+                }
+            });
+        }
+
+        function backToSelection() {
+            document.getElementById('roleSelection').style.display = 'block';
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('userJoin').style.display = 'none';
+            document.getElementById('loginSubtitle').textContent = '选择进入方式';
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password !== ADMIN_PASSWORD) {
+                alert('管理员密码错误！');
+                return;
+            }
+            
+            isAdmin = true;
+            currentNickname = '管理员';
+            const key = generateSecretKey();
+            currentRoom = key;
+            
+            participants = [];
+            wonParticipants = [];
+            history = [];
+            currentMode = 'normal';
+            
+            saveToLocalStorage();
+            
+            document.getElementById('displayKey').textContent = key;
+            document.getElementById('displayNickname').textContent = currentNickname;
+            document.getElementById('adminIndicator').style.display = 'block';
+            document.getElementById('deleteRoomBtn').style.display = 'block';
+            document.getElementById('settingsBtn').style.display = 'flex';
+            document.getElementById('loginScreen').classList.add('hidden');
+            
+            alert(`房间创建成功！\n\n房间秘钥：${key}\n\n请将此秘钥分享给需要加入的成员。`);
+            
+            loadCustomSettings();
+            updateParticipantsList();
+            drawWheel();
+        }
+
+        function joinRoom() {
+            const keyInput = document.getElementById('secretKeyInput');
+            const nicknameInput = document.getElementById('nicknameInput');
+            const key = keyInput.value.trim().toUpperCase();
+            
+            if (!key) {
+                alert('请输入秘钥');
+                return;
+            }
+            
+            const roomData = localStorage.getItem(`room_${key}`);
+            if (!roomData) {
+                alert('房间不存在，请检查秘钥');
+                return;
+            }
+            
+            // 设置昵称
+            currentNickname = nicknameInput.value.trim() || generateRandomNickname();
+            
+            isAdmin = false;
+            currentRoom = key;
+            document.getElementById('displayKey').textContent = key;
+            document.getElementById('displayNickname').textContent = currentNickname;
+            document.getElementById('loginScreen').classList.add('hidden');
+            
+            loadFromLocalStorage();
+            loadCustomSettings();
+            updateParticipantsList();
+            updateHistoryList();
+            drawWheel();
+        }
+
+        function loadCustomSettings() {
+            const savedTheme = localStorage.getItem('soundTheme');
+            if (savedTheme) {
+                changeSoundTheme(savedTheme);
+            }
+            
+            const savedBg = localStorage.getItem('customBackground');
+            if (savedBg) {
+                document.body.style.background = `url(${savedBg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.getElementById('bgPreview').src = savedBg;
+                document.getElementById('bgPreview').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            if (confirm('确定要退出房间吗？')) {
+                currentRoom = '';
+                currentNickname = '';
+                isAdmin = false;
+                participants = [];
+                wonParticipants = [];
+                history = [];
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('adminIndicator').style.display = 'none';
+                document.getElementById('deleteRoomBtn').style.display = 'none';
+                document.getElementById('settingsBtn').style.display = 'none';
+                document.getElementById('settingsPanel').classList.remove('active');
+                updateParticipantsList();
+                drawWheel();
+            }
+        }
+
+        function deleteRoom() {
+            if (!isAdmin) {
+                alert('只有管理员可以删除房间！');
+                return;
+            }
+            
+            if (confirm('确定要删除这个房间吗？所有数据将被清空！')) {
+                deleteFromLocalStorage();
+                alert('房间已删除！');
+                logout();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('确定要清理所有中奖记录吗？（不会删除项目）')) {
+                history = [];
+                wonParticipants = [];
+                updateHistoryList();
+                updateParticipantsList();
+                drawWheel();
+                saveToLocalStorage();
+                alert('中奖记录已清理！');
+            }
+        }
+
+        function clearAllProjects() {
+            if (confirm('确定要清空所有项目吗？这将重置整个转盘！')) {
+                participants = [];
+                wonParticipants = [];
+                history = [];
+                updateParticipantsList();
+                updateHistoryList();
+                drawWheel();
+                saveToLocalStorage();
+                alert('所有数据已清空，可以重新开始！');
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            updateModeButtons(mode);
+            saveToLocalStorage();
+            drawWheel(); // 重新绘制以更新颜色
+            playClickSound();
+        }
+
+        function updateModeButtons(mode) {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if ((mode === 'normal' && btn.textContent.includes('普通')) ||
+                    (mode === 'advanced' && btn.textContent.includes('高级'))) {
+                    btn.classList.add('active');
+                }
+            });
+        }
 
         function addName() {
             const input = document.getElementById('nameInput');
@@ -611,25 +1436,44 @@
                 input.value = '';
                 updateParticipantsList();
                 drawWheel();
+                saveToLocalStorage();
+                playClickSound();
             }
-        }
-
-        function clearAll() {
-            participants = [];
-            updateParticipantsList();
-            drawWheel();
         }
 
         function updateParticipantsList() {
             const list = document.getElementById('participantsList');
             
             if (participants.length === 0) {
-                list.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">还没有参与者<br>请添加至少2个参与者</p>';
+                list.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">还没有项目<br>请添加至少2个项目</p>';
             } else {
-                list.innerHTML = participants.map((name, index) => `
-                    <div class="participant-item">
-                        <div class="participant-number">${index + 1}</div>
-                        <span>${name}</span>
+                list.innerHTML = participants.map((name, index) => {
+                    const isWon = wonParticipants.includes(name);
+                    return `
+                        <div class="participant-item ${isWon ? 'won' : ''}">
+                            <div class="participant-number">${index + 1}</div>
+                            <span>${name}</span>
+                            ${isWon ? '<span class="won-badge">✓ 已中奖</span>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function updateHistoryList() {
+            const list = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                list.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center;">暂无历史记录</p>';
+            } else {
+                list.innerHTML = history.slice().reverse().slice(0, 10).map(item => `
+                    <div class="history-item">
+                        <div>
+                            <span class="history-user">${item.user}</span>
+                            <span>抽中了</span>
+                            <span class="history-winner">${item.winner}</span>
+                        </div>
+                        <div class="history-time">${new Date(item.time).toLocaleString('zh-CN', {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'})}</div>
                     </div>
                 `).join('');
             }
@@ -654,6 +1498,8 @@
                 ctx.strokeStyle = '#666';
                 ctx.lineWidth = 2;
                 ctx.stroke();
+                
+                drawCenterDecoration(ctx, centerX, centerY);
                 return;
             }
             
@@ -668,56 +1514,183 @@
                 ctx.arc(centerX, centerY, radius, startAngle, endAngle);
                 ctx.closePath();
                 
-                ctx.fillStyle = colors[index % colors.length];
+                // 高级模式：已中奖变黑色
+                const isWon = currentMode === 'advanced' && wonParticipants.includes(name);
+                if (isWon) {
+                    ctx.fillStyle = '#2a2a2a';
+                } else {
+                    ctx.fillStyle = colors[index % colors.length];
+                }
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(255,255,255,0.8)';
                 ctx.lineWidth = 3;
                 ctx.stroke();
                 
+                // 文字
                 ctx.save();
                 ctx.translate(centerX, centerY);
                 ctx.rotate(startAngle + sliceAngle / 2);
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 18px Arial';
+                ctx.fillStyle = isWon ? '#666' : 'white';
+                ctx.font = 'bold 18px Fredoka';
                 ctx.shadowColor = 'rgba(0,0,0,0.5)';
                 ctx.shadowBlur = 4;
-                ctx.fillText(name, radius * 0.65, 0);
+                
+                // 如果是已中奖，添加删除线效果
+                if (isWon) {
+                    ctx.fillText(name, radius * 0.65, 0);
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(radius * 0.45, 0);
+                    ctx.lineTo(radius * 0.85, 0);
+                    ctx.stroke();
+                } else {
+                    ctx.fillText(name, radius * 0.65, 0);
+                }
+                
                 ctx.restore();
             });
             
+            drawCenterDecoration(ctx, centerX, centerY);
+        }
+
+        function drawCenterDecoration(ctx, centerX, centerY) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 45, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 38, 0, 2 * Math.PI);
+            ctx.fillStyle = '#2D3561';
+            ctx.fill();
+            
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 30);
+            gradient.addColorStop(0, '#FF6B9D');
+            gradient.addColorStop(1, '#F67280');
             ctx.beginPath();
             ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = gradient;
             ctx.fill();
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 3;
-            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            for (let i = 0; i < 8; i++) {
+                const angle = (i * Math.PI) / 4;
+                const x = centerX + Math.cos(angle) * 20;
+                const y = centerY + Math.sin(angle) * 20;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle + Math.PI / 4);
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.beginPath();
+                for (let j = 0; j < 4; j++) {
+                    const starAngle = (j * Math.PI) / 2;
+                    const starRadius = j % 2 === 0 ? 3 : 1.5;
+                    const sx = Math.cos(starAngle) * starRadius;
+                    const sy = Math.sin(starAngle) * starRadius;
+                    if (j === 0) {
+                        ctx.moveTo(sx, sy);
+                    } else {
+                        ctx.lineTo(sx, sy);
+                    }
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
         }
 
         function spin() {
-            if (isSpinning || participants.length < 2) return;
+            if (isSpinning) return;
+            
+            const availableParticipants = currentMode === 'advanced' 
+                ? participants.filter(p => !wonParticipants.includes(p))
+                : participants;
+            
+            if (availableParticipants.length < 2) {
+                alert(currentMode === 'advanced' ? '所有项目都已中奖！' : '请添加至少2个项目');
+                return;
+            }
             
             isSpinning = true;
             const spinBtn = document.getElementById('spinBtn');
             spinBtn.disabled = true;
             spinBtn.textContent = '旋转中...';
             
+            playSpinSound();
+            
             const canvas = document.getElementById('wheelCanvas');
-            const spins = 5 + Math.floor(Math.random() * 3);
-            const extraDegrees = Math.random() * 360;
-            const totalRotation = spins * 360 + extraDegrees;
+            
+            let winnerIndex;
+            if (currentMode === 'advanced') {
+                const availableIndices = participants
+                    .map((p, i) => ({ p, i }))
+                    .filter(({ p }) => !wonParticipants.includes(p))
+                    .map(({ i }) => i);
+                winnerIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            } else {
+                winnerIndex = Math.floor(Math.random() * participants.length);
+            }
+            
+            const winner = participants[winnerIndex];
+            const totalSlices = participants.length;
+            const sliceAngle = 360 / totalSlices;
+            const pointerAngle = 270;
+            const sectorStartAngle = winnerIndex * sliceAngle;
+            const sectorCenterAngle = sectorStartAngle + sliceAngle / 2;
+            
+            let targetRotation = pointerAngle - sectorCenterAngle;
+            
+            while (targetRotation < 0) {
+                targetRotation += 360;
+            }
+            while (targetRotation >= 360) {
+                targetRotation -= 360;
+            }
+            
+            const currentNormalized = ((currentRotation % 360) + 360) % 360;
+            let rotationNeeded = targetRotation - currentNormalized;
+            
+            if (rotationNeeded < 0) {
+                rotationNeeded += 360;
+            }
+            
+            const fullSpins = 5 + Math.floor(Math.random() * 3);
+            const totalRotation = fullSpins * 360 + rotationNeeded;
             
             currentRotation += totalRotation;
             canvas.style.transform = `rotate(${currentRotation}deg)`;
             
+            console.log('🎯 中奖:', winnerIndex, winner, '昵称:', currentNickname);
+            
             setTimeout(() => {
-                const normalizedRotation = currentRotation % 360;
-                const sliceAngle = 360 / participants.length;
-                const winnerIndex = Math.floor((360 - normalizedRotation + sliceAngle / 2) / sliceAngle) % participants.length;
+                if (currentMode === 'advanced' && !wonParticipants.includes(winner)) {
+                    wonParticipants.push(winner);
+                }
                 
-                showWinner(participants[winnerIndex]);
+                history.push({
+                    winner: winner,
+                    user: currentNickname,
+                    time: Date.now(),
+                    mode: currentMode
+                });
+                
+                saveToLocalStorage();
+                updateParticipantsList();
+                updateHistoryList();
+                drawWheel();
+                
+                showWinner(winner);
+                playFireworkSound();
+                createConfetti();
                 
                 isSpinning = false;
                 spinBtn.disabled = false;
@@ -726,6 +1699,7 @@
         }
 
         function showWinner(name) {
+            document.getElementById('modalUserName').textContent = currentNickname + ' 抽中了：';
             document.getElementById('winnerName').textContent = name;
             document.getElementById('resultModal').classList.add('active');
         }
@@ -734,41 +1708,21 @@
             document.getElementById('resultModal').classList.remove('active');
         }
 
-        function toggleSettings() {
-            document.getElementById('settingsPanel').classList.toggle('active');
-        }
-
-        function changeBgType(type) {
-            document.querySelectorAll('.bg-type-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.getElementById('solidSettings').style.display = type === 'solid' ? 'block' : 'none';
-            document.getElementById('gradientSettings').style.display = type === 'gradient' ? 'block' : 'none';
-            document.getElementById('imageSettings').style.display = type === 'image' ? 'block' : 'none';
-        }
-
-        function changeSolidColor(color) {
-            document.body.style.background = color;
-        }
-
-        function applyGradient(start, end) {
-            document.getElementById('gradientStart').value = start;
-            document.getElementById('gradientEnd').value = end;
-            updateGradient();
-        }
-
-        function updateGradient() {
-            const start = document.getElementById('gradientStart').value;
-            const end = document.getElementById('gradientEnd').value;
-            document.body.style.background = `linear-gradient(135deg, ${start}, ${end})`;
-        }
-
-        function changeImageBg(url) {
-            if (url) {
-                document.body.style.background = `url(${url})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundPosition = 'center';
-                document.body.style.backgroundAttachment = 'fixed';
+        function createConfetti() {
+            for (let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = '-10px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.width = (5 + Math.random() * 10) + 'px';
+                    confetti.style.height = confetti.style.width;
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 20);
             }
         }
 
